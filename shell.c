@@ -79,7 +79,7 @@ int run(char *args[])
      }
     else if (pid == 0) 
      {
-     printf("%s, %s, %s\n", args[0], args[1],args[2]);
+     
      execvp(args[0], args);  
      printf("error\n");
      return 0;
