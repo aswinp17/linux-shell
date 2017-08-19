@@ -8,7 +8,7 @@
 #include<string.h>
 #include<stdlib.h>
 
-int parse(char* cmd, char **params);
+char **parse(char *line);
 int run(char **args);
 #define LENGTH 100
 #define ARG 10
@@ -17,7 +17,7 @@ int main()
 {
 
  char cmd[LENGTH];
- char *args[ARG];
+ char **args;
  int cmdcount = 0,n;
 
  while(1){
@@ -26,10 +26,13 @@ int main()
    if(fgets(cmd,sizeof(cmd),stdin) == NULL){
       break;
     }
-   if(cmd[strlen(cmd)-1] == '\n') {
+   
+  if(cmd[strlen(cmd)-1] == '\n') {
        cmd[strlen(cmd)-1] == '\0';
     }
-   int count = parse(cmd, args);
+   
+   args = parse(cmd);
+   
    if(strcmp(args[0],"exit") == 0){
       break;
    }
@@ -39,18 +42,33 @@ int main()
  }
 }
 
-int parse(char *cmd, char **args)
+
+#define LSH_TOK_BUFSIZE 64
+#define LSH_TOK_DELIM " \t\r\n\a"
+char **parse(char *line)
 {
-  int n = -1;
-  for(int i = 0 ; i < ARG; i++) {
-      args[i] = strsep(&cmd," ");
-      n++;
-      if(args[i] == NULL)
-      break;
-     }
-  return (n) ;
+  int bufsize = LSH_TOK_BUFSIZE, position = 0;
+  char **tokens = malloc(bufsize * sizeof(char*));
+  char *token;
+
+  if (!tokens) {
+    fprintf(stderr, "lsh: allocation error\n");
+    exit(EXIT_FAILURE);
+  }
+
+  token = strtok(line, LSH_TOK_DELIM);
+  while (token != NULL) {
+    tokens[position] = token;
+    position++;
+
+    
+
+    token = strtok(NULL, LSH_TOK_DELIM);
+  }
+  tokens[position] = NULL;
+  return tokens;
 }
- 
+
 int run(char *args[])
 {
     pid_t pid = fork();
@@ -61,12 +79,12 @@ int run(char *args[])
      }
     else if (pid == 0) 
      {
+     printf("%s, %s, %s\n", args[0], args[1],args[2]);
      execvp(args[0], args);  
      printf("error\n");
      return 0;
      }
 } 
-
 
 
 
